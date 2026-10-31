@@ -31,6 +31,7 @@ type BetStatus = 'Pending' | 'Won' | 'Lost' | 'Void'
 type BetRecord = {
   id: number
   date: string
+  time?: string
   sport: string
   event: string
   market: string
@@ -41,6 +42,7 @@ type BetRecord = {
 
 type BetFormState = {
   date: string
+  time: string
   sport: string
   event: string
   market: string
@@ -90,6 +92,7 @@ const navItems: NavItem[] = [
 
 const defaultFormState: BetFormState = {
   date: new Date().toISOString().slice(0, 10),
+  time: new Date().toTimeString().slice(0, 5),
   sport: '',
   event: '',
   market: '',
@@ -185,6 +188,7 @@ function normalizeBetRecord(value: unknown): BetRecord | null {
   return {
     id: record.id,
     date: record.date,
+    time: typeof record.time === 'string' ? record.time : undefined,
     sport: record.sport,
     event: record.event,
     market: record.market,
@@ -306,6 +310,7 @@ function normalizeSupabaseBet(value: Record<string, unknown>): BetRecord | null 
   return {
     id: Number(value.id),
     date: value.date,
+    time: typeof value.time === 'string' ? value.time : undefined,
     sport: typeof value.sport === 'string' ? value.sport : '',
     event: typeof value.event === 'string' ? value.event : '',
     market: typeof value.market === 'string' ? value.market : '',
@@ -3213,6 +3218,7 @@ function TradeJournalPage({
   const openEditModal = (record: BetRecord) => {
     setFormState({
       date: record.date,
+      time: record.time ?? '00:00',
       sport: record.sport,
       event: record.event,
       market: record.market,
@@ -3262,6 +3268,7 @@ function TradeJournalPage({
     const normalizedRecord: BetRecord = {
       id: editingId ?? Date.now(),
       date: formState.date,
+      time: formState.time,
       sport: trimmedSport,
       event: trimmedEvent,
       market: trimmedMarket,
@@ -3406,7 +3413,10 @@ function TradeJournalPage({
             <tbody>
               {filteredRecords.map((record) => (
                 <tr key={record.id}>
-                  <td>{record.date}</td>
+                  <td>
+                    {record.date}
+                    {record.time ? ` • ${record.time}` : ''}
+                  </td>
                   <td>{record.sport}</td>
                   <td>{record.event}</td>
                   <td>{record.market}</td>
@@ -3469,6 +3479,16 @@ function TradeJournalPage({
                   type="date"
                   name="date"
                   value={formState.date}
+                  onChange={handleInputChange}
+                />
+              </label>
+
+              <label className="field-group">
+                <span>Time</span>
+                <input
+                  type="time"
+                  name="time"
+                  value={formState.time}
                   onChange={handleInputChange}
                 />
               </label>
